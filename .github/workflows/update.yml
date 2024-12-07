@@ -32,17 +32,17 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ github.event.inputs.api_key }}
         run: |
-          echo $HEROKU_API_KEY | heroku auth:token
+          heroku auth:token
 
       - name: Add Heroku Git Remote
         run: |
-          heroku git:remote -a ${{ github.event.inputs.appname }}
+          git remote add heroku https://git.heroku.com/${{ github.event.inputs.appname }}.git
 
       - name: Deploy to Heroku
         run: |
           git push heroku main
 
       - name: Assign App to Team (Optional)
-        if: ${{ github.event.inputs.team }}
+        if: ${{ github.event.inputs.team && github.event.inputs.team != '' }}
         run: |
           heroku apps:transfer ${{ github.event.inputs.team }} --app ${{ github.event.inputs.appname }}
