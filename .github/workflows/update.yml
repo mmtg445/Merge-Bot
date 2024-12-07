@@ -12,9 +12,6 @@ on:
       api_key:
         description: "Enter Heroku API Key"
         required: true
-      team:
-        description: "Enter Heroku Team Name (Optional)"
-        required: false
 
 jobs:
   deploy:
@@ -32,17 +29,12 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ github.event.inputs.api_key }}
         run: |
-          heroku auth:token --save ${{ github.event.inputs.api_key }}
+          echo $HEROKU_API_KEY | heroku auth:token
 
-      - name: Set Heroku App
+      - name: Add Heroku Git Remote
         run: |
           heroku git:remote -a ${{ github.event.inputs.appname }}
 
       - name: Deploy to Heroku
         run: |
           git push heroku main
-
-      - name: Assign to Heroku Team (Optional)
-        if: ${{ github.event.inputs.team }}
-        run: |
-          heroku apps:transfer ${{ github.event.inputs.team }} --app ${{ github.event.inputs.appname }}
