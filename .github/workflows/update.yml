@@ -32,13 +32,7 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ github.event.inputs.api_key }}
         run: |
-          echo "machine api.heroku.com
-  login ${{ github.event.inputs.gmail }}
-  password ${{ github.event.inputs.api_key }}" > ~/.netrc
-          echo "machine git.heroku.com
-  login ${{ github.event.inputs.gmail }}
-  password ${{ github.event.inputs.api_key }}" >> ~/.netrc
-          chmod 600 ~/.netrc
+          heroku auth:token --save ${{ github.event.inputs.api_key }}
 
       - name: Set Heroku App
         run: |
