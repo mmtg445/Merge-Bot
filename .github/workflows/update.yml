@@ -6,9 +6,6 @@ on:
       appname:
         description: "Enter Heroku App Name"
         required: true
-      gmail:
-        description: "Enter Heroku Gmail Address"
-        required: true
       api_key:
         description: "Enter Heroku API Key"
         required: true
@@ -28,13 +25,26 @@ jobs:
         run: |
           curl https://cli-assets.heroku.com/install.sh | sh
 
-      - name: Login to Heroku
+      - name: Set Heroku API Key
+        env:
+          HEROKU_API_KEY: ${{ github.event.inputs.api_key }}
         run: |
-          echo "${{ github.event.inputs.api_key }}" | heroku auth:token
+          echo "machine api.heroku.com
+  login ${{ github.event.inputs.api_key }}
+  password ${{ github.event.inputs.api_key }}" > ~/.netrc
 
       - name: Set Heroku App
         run: |
           heroku git:remote -a ${{ github.event.inputs.appname }}
+
+      - name: Deploy to Heroku
+        run: |
+          git push heroku main
+
+      - name: Assign to Heroku Team (Optional)
+        if: ${{ github.event.inputs.team }}
+        run: |
+          heroku apps:transfer ${{ github.event.inputs.team }} --app ${{ github.event.inputs.appname }}          heroku git:remote -a ${{ github.event.inputs.appname }}
 
       - name: Deploy to Heroku
         run: |
