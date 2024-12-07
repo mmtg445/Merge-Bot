@@ -12,6 +12,9 @@ on:
       api_key:
         description: "Enter Heroku API Key"
         required: true
+      team:
+        description: "Enter Heroku Team Name (Optional)"
+        required: false
 
 jobs:
   deploy:
@@ -38,3 +41,8 @@ jobs:
       - name: Deploy to Heroku
         run: |
           git push heroku main
+
+      - name: Assign App to Team (Optional)
+        if: ${{ github.event.inputs.team }}
+        run: |
+          heroku apps:transfer ${{ github.event.inputs.team }} --app ${{ github.event.inputs.appname }}
