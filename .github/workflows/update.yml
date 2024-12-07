@@ -1,20 +1,46 @@
-name: Manually Deploy to Heroku
+name: Deploy to Heroku
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      appname:
+        description: "Enter Heroku App Name"
+        required: true
+      gmail:
+        description: "Enter Heroku Gmail Address"
+        required: true
+      api_key:
+        description: "Enter Heroku API Key"
+        required: true
+      team:
+        description: "Enter Heroku Team Name (Optional)"
+        required: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-          heroku_email: ${{secrets.HEROKU_EMAIL}}
-          usedocker: true
-          docker_heroku_process_type: worker
-          stack: "container"
-          region: "us"
-        env:
-          HD_CONFIG_FILE_URL: ${{secrets.CONFIG_FILE_URL}}
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Login to Heroku
+        run: |
+          echo "${{ github.event.inputs.api_key }}" | heroku auth:token
+
+      - name: Set Heroku App
+        run: |
+          heroku git:remote -a ${{ github.event.inputs.appname }}
+
+      - name: Deploy to Heroku
+        run: |
+          git push heroku main
+
+      - name: Assign to Heroku Team (Optional)
+        if: ${{ github.event.inputs.team }}
+        run: |
+          heroku apps:transfer ${{ github.event.inputs.team }} --app ${{ github.event.inputs.appname }}
